@@ -172,7 +172,7 @@ function render() {
 
             const check = document.createElement("i");
             check.className = "check";
-            check.classList.add("ok");
+            //check.classList.add("ok");
             //check.classList.add("fail");
             el.appendChild(check);
           }
