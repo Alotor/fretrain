@@ -1,5 +1,6 @@
 import './style.css'
 import * as st from "./state" ;
+import { NoteColors } from "./constants.ts";
 
 import Fretboard from "./ui/Fretboard";
 
@@ -15,9 +16,12 @@ function randomNote(accidentals: boolean = false) {
 function start() {
   st.state.currentNote = randomNote();
   st.state.visible = new Set();
-  document.getElementById("selectedNoteLabel")!.textContent = st.state.currentNote;
-  console.log(st.state);
 
+  const noteLabel = document.getElementById("selectedNoteLabel")!;
+  noteLabel.textContent = st.state.currentNote;
+  
+  noteLabel.style.setProperty("--current-note-color", NoteColors[st.state.currentNote]);
+  
   const container = document.querySelector(".fretboard") as HTMLElement;
   if (container){
     Fretboard(container);

@@ -31,6 +31,21 @@ html, body, #app {
   flex: 1;
 }
 
+#selectedNoteLabel {
+  font-weight: bold;
+  border-radius: 50%;
+  width: 24px;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  color: white;
+  background: var(--current-note-color);
+  border: 0;
+  padding: 0 1px 1px 0;
+}
+
 #resetBtn {
   padding: 4px 8px;
   border-radius: 8px;
@@ -60,6 +75,7 @@ html, body, #app {
   margin: 0;
   background: none;
 
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,4 +169,12 @@ html, body, #app {
 }
 .fail {
   background: #e05659;
+}
+
+.next::before {
+  content: "\f063";
+}
+
+.next {
+  background: #7558a1;
 }

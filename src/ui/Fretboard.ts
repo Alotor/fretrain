@@ -5,8 +5,14 @@ import StringPanel from "./StringPanel";
 export default function Fretboard(container: HTMLElement) {
 
   function clickButton(row: number, col: number) {
-    st.state.visible.add(st.coord(row, col));
-    render();    
+    const coord = st.coord(row, col);
+    st.state.visible.add(coord);
+    const button = document.querySelector(`button[data-coord='${coord}']`)!;
+
+    const clickedNote = button.dataset["note"];
+    if (!clickedNote.endsWith("#") && !clickedNote.endsWith("b")) {
+      button.classList.remove("hidden");
+    }
   }
   
   function render() {

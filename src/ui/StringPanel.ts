@@ -7,9 +7,11 @@ export default function StringPanel(row: number, col: number) {
     el.className = "string";
 
     const check = document.createElement("i");
+    check.dataset['string'] = `${col}`;
     check.className = "check";
     //check.classList.add("ok");
     //check.classList.add("fail");
+    // check.classList.add("next");
     el.appendChild(check);
   }
 
@@ -27,3 +29,16 @@ export default function StringPanel(row: number, col: number) {
 
   return el;
 }
+
+export function markOK() {
+  
+}
+
+export function markFail() {
+  
+}
+
+export function markNext() {
+  
+}
+
