@@ -2,12 +2,13 @@
 export default function StringPanel(row: number, col: number) {
   const el = document.createElement("div")
   el.className = "cont";
+  const stringNum = (6 - col + 1);
+  el.dataset['string'] = `${stringNum}`;
 
   if (row === 0 && col > 0 && col < 7) {
     el.className = "string";
 
     const check = document.createElement("i");
-    check.dataset['string'] = `${col}`;
     check.className = "check";
     //check.classList.add("ok");
     //check.classList.add("fail");

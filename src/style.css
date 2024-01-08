@@ -25,6 +25,7 @@ html, body, #app {
   padding: 8px;
   align-items: center;
   justify-content: flex-start;
+  gap: 8px;
 }
 
 .text {
@@ -46,6 +47,7 @@ html, body, #app {
   padding: 0 1px 1px 0;
 }
 
+#nextBtn,
 #resetBtn {
   padding: 4px 8px;
   border-radius: 8px;
@@ -137,6 +139,18 @@ html, body, #app {
   background: goldenrod;
 }
 
+.next::before {
+  background: #7558a1;
+}
+
+.ok::before {
+  background: #9abc56;
+}
+
+.fail::before {
+  background: #e05659;
+}
+
 .check {
   -webkit-font-smoothing: antialiased;
   border-radius: 50%;
@@ -156,25 +170,25 @@ html, body, #app {
   z-index: 2;
 }
 
-.ok::before {
+.ok > .check::before {
   content: "\f00c";
 }
 
-.ok {
+.ok > .check {
   background: #9abc56;
 }
 
-.fail::before {
+.fail > .check::before {
   content: "\f00d";
 }
-.fail {
+.fail > .check {
   background: #e05659;
 }
 
-.next::before {
+.next > .check::before {
   content: "\f063";
 }
 
-.next {
+.next > .check {
   background: #7558a1;
 }

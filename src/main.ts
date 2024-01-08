@@ -4,17 +4,11 @@ import { NoteColors } from "./constants.ts";
 
 import Fretboard from "./ui/Fretboard";
 
-function randomNote(accidentals: boolean = false) {
-  const notes =
-    accidentals ?
-    ["A", "A#", "Bb", "B", "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab"] :
-    ["A", "B", "C", "D", "E", "F", "G"];
-
-  return notes[Math.floor(notes.length * Math.random())];
-}
-
 function start() {
-  st.state.currentNote = randomNote();
+  st.initState();
+  // st.state.currentNote = randomNote();
+  // st.state.currentString = randomString();
+  st.nextString();
   st.state.visible = new Set();
 
   const noteLabel = document.getElementById("selectedNoteLabel")!;
@@ -26,6 +20,8 @@ function start() {
   if (container){
     Fretboard(container);
   }
+
+  Fretboard.markNextString(st.state.currentString);
 }
 
 window.onerror = function (message, _file, _line, _col, error) {
