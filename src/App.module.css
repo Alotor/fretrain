@@ -1,9 +1,12 @@
-* {
+:global(*) {
   font-family: Roboto;
   box-sizing: border-box;
 }
 
-html, body, #app {
+:global(html),
+:global(body),
+:global(#app),
+.main {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -12,7 +15,7 @@ html, body, #app {
   font-family: Roboto;
 }
 
-#app {
+.main {
   display: flex;
   flex-direction: column;
 }
@@ -62,7 +65,7 @@ html, body, #app {
 
   display: grid;
   grid-template-columns: 8px repeat(6, 1fr) 8px;
-  grid-template-rows: 0px repeat(13, 1fr);
+  grid-template-rows: 0px 42px repeat(12, 1fr);
   row-gap: 4px;
   column-gap: 4px;
 
@@ -157,17 +160,22 @@ html, body, #app {
   color: white;
   display: var(--fa-display,inline-block);
   font-family: "Font Awesome 6 Free";
-  font-size: 14px;
+  font-size: 1.25rem;
   font-style: normal;
   font-variant: normal;
   font-weight: 900;
-  left: calc(50% - 14px);
   line-height: 1;
   padding: 8px;
   position: absolute;
   text-rendering: auto;
   top: -10px;
   z-index: 2;
+
+  left: calc(50% - 21px);
+  width: 42px;
+  height: 42px;
+  text-align: center;
+  line-height: 24px;
 }
 
 .ok > .check::before {
@@ -192,3 +200,16 @@ html, body, #app {
 .next > .check {
   background: #7558a1;
 }
+
+
+.timer-circle {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  z-index: 2;
+  top: -11px;
+  left: calc(50% - 21px);
+
+  
+}
+

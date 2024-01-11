@@ -20,9 +20,9 @@ export const NoteColors: Record<string, string> = {
   "Gb": "#2d467b",
 };
 
-export const StringNotes: Record<number, Record<number, Array<string>>> = {
+export const StringNotes: Record<number, Record<string, Array<string>>> = {
   6: {
-    0:  ["E"],
+    //0:  ["E"],
     1:  ["F"],
     2:  ["F#", "Gb"],
     3:  ["G"],
@@ -38,7 +38,7 @@ export const StringNotes: Record<number, Record<number, Array<string>>> = {
   },
 
   5: {
-    0:  ["A"],
+    //0:  ["A"],
     1:  ["A#", "Bb"],
     2:  ["B"],
     3:  ["C"],
@@ -54,7 +54,7 @@ export const StringNotes: Record<number, Record<number, Array<string>>> = {
   },
   
   4: {
-    0:  ["D"],
+    //0:  ["D"],
     1:  ["D#", "Eb"],
     2:  ["E"],
     3:  ["F"],
@@ -70,7 +70,7 @@ export const StringNotes: Record<number, Record<number, Array<string>>> = {
   },
 
   3: {
-    0:  ["G"],
+    //0:  ["G"],
     1:  ["G#", "Ab"],
     2:  ["A"],
     3:  ["A#", "Bb"],
@@ -86,7 +86,7 @@ export const StringNotes: Record<number, Record<number, Array<string>>> = {
   },
 
   2: {
-    0:  ["B"],
+    //0:  ["B"],
     1:  ["C"],
     2:  ["C#", "Db"],
     3: ["D"],
@@ -102,7 +102,7 @@ export const StringNotes: Record<number, Record<number, Array<string>>> = {
   },
 
   1: {
-    0:  ["E"],
+    //0:  ["E"],
     1:  ["F"],
     2:  ["F#", "Gb"],
     3:  ["G"],
