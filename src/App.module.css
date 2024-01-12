@@ -33,6 +33,7 @@
 
 .text {
   flex: 1;
+  text-transform: uppercase;
 }
 
 #selectedNoteLabel {
@@ -47,7 +48,8 @@
   color: white;
   background: var(--current-note-color);
   border: 0;
-  padding: 0 1px 1px 0;
+  margin-left: 0.25rem;
+  padding-top: 2px;
 }
 
 #nextBtn,
@@ -65,7 +67,7 @@
 
   display: grid;
   grid-template-columns: 8px repeat(6, 1fr) 8px;
-  grid-template-rows: 0px 42px repeat(12, 1fr);
+  grid-template-rows: 0px 42px repeat(13, 1fr);
   row-gap: 4px;
   column-gap: 4px;
 
@@ -209,7 +211,5 @@
   z-index: 2;
   top: -11px;
   left: calc(50% - 21px);
-
-  
 }
 
