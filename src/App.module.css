@@ -67,7 +67,7 @@
 
   display: grid;
   grid-template-columns: 8px repeat(6, 1fr) 8px;
-  grid-template-rows: 0px 42px repeat(13, 1fr);
+  grid-template-rows: 0px 42px repeat(12, 1fr);
   row-gap: 4px;
   column-gap: 4px;
 
@@ -88,7 +88,8 @@
   justify-content: center;
   overflow: hidden;
   font-weight: bold;
-  z-index: 0;
+  z-index: 1;
+  font-size: 1.2rem;
 }
 
 .fretboard-btn::before {
@@ -100,6 +101,7 @@
   border-radius: 50%;
   position: absolute;
   z-index: -1;
+  box-shadow: 0px 3px 3px 3px rgba(0,0,0,0.3);
 }
 
 .fretboard-btn.hidden {
@@ -110,6 +112,22 @@
   background: white;
   width: 100%;
   height: 100%;
+}
+
+.mark.twelve {
+}
+
+.mark.twelve::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 100%;
+  background: white;
+  left: 10px;
+}
+
+.mark.twelve.right::after {
+  left: -10px;
 }
 
 .cont {
@@ -123,6 +141,7 @@
   position: absolute;
   top: -4px;
   left: -8px;
+  box-shadow: 0px 3px 3px 3px rgba(0,0,0,0.3);
 }
 .nut {
   height: 8px;
@@ -142,6 +161,8 @@
   top: -8px;
   left: calc(50% - 3px);
   background: goldenrod;
+  box-shadow: 0px 3px 3px 3px rgba(0,0,0,0.3);
+  z-index: 1;
 }
 
 .next::before {
@@ -160,13 +181,12 @@
   -webkit-font-smoothing: antialiased;
   border-radius: 50%;
   color: white;
-  display: var(--fa-display,inline-block);
   font-family: "Font Awesome 6 Free";
   font-size: 1.25rem;
   font-style: normal;
   font-variant: normal;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.2rem;
   padding: 8px;
   position: absolute;
   text-rendering: auto;
@@ -178,6 +198,10 @@
   height: 42px;
   text-align: center;
   line-height: 24px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .ok > .check::before {

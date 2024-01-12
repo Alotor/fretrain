@@ -3,18 +3,23 @@ import style from './App.module.css';
 import classnames from "classnames";
 import { NoteColors, StringNotes } from "./constants.ts";
 import { useMachine } from '@xstate/react';
-import { createMachine } from 'xstate';
-import AppFsm from "./App.fsm.json";
+import AppFsm from "./App.fsm";
 import * as random from "./random";
 
 type FretMarkerProps = {
   row: number;
+  col: number;
 }
 
-function FretMarker({ row }: FretMarkerProps) {
+const TOTAL_TIME = 5;
+
+function FretMarker({ row, col }: FretMarkerProps) {
   // Fret markers on frets 3, 5, 7, 9 and 12
   const mark = (row === 4 || row === 6 || row === 8 || row === 10 || row === 13) ? (
-    <div className={style.mark}></div>
+    <div className={classnames(style.mark, {
+      [style.twelve]: row=== 13,
+      [style.right]: col === 7
+    })}></div>
   ) : null; 
 
   const fret = (row > 1) ? (
@@ -56,6 +61,18 @@ function StringPanel({ state, progress }: StringPanelProps) {
         ) : null}
     </div>
   );
+}
+
+function displayCorrect(s: Store): Store {
+  const ks: Array<string> = Object.keys(StringNotes[s.selectedString]);
+  const idx = ks.find((k) => new Set(StringNotes[s.selectedString][k]).has(s.selectedNote));
+
+  const displayCoord = `${s.selectedString},${idx}`;
+
+  return {
+    ...s,
+    displayNotes: new Set([...s.displayNotes, displayCoord])
+  }
 }
 
 type FretButtonProps = {
@@ -115,14 +132,12 @@ function initStore(): Store {
   };
 }
 
-const machine = createMachine(AppFsm);
-
 function App() {
   const [store, setStore] = useState<Store>(initStore);
 
   const timerRef = useRef<number | null>(null);
   const timeSinceStartRef = useRef<number | null>(null);
-  const [_state, send] = useMachine(machine.provide({
+  const [_state, send] = useMachine(AppFsm.provide({
     actions: {
       selectNote: () => {
         const note = random.randomNote();
@@ -156,7 +171,7 @@ function App() {
             const ellapsed = (new Date().getTime() - startTime) / 1000;
             send({type: "time", ellapsed});
           }
-        }, 1000);
+        }, 16.6);
         timerRef.current = id;
       },
       stopTimer: () => {
@@ -165,16 +180,19 @@ function App() {
           timerRef.current = null;
         }
       },
-      updateProgress: ({ event: { ellapsed } }) => {
-        setStore((s) => ({
-          ...s,
-          selectedStringProgress: (ellapsed / 10) * 100
-        }));
-        if (ellapsed >= 10) {
-          send({ type: "timeout" })
+      updateProgress: ({ event }) => {
+        if (event.type === "time") {
+          setStore((s) => ({
+            ...s,
+            selectedStringProgress: (event.ellapsed / TOTAL_TIME) * 100
+          }));
+          if (event.ellapsed >= TOTAL_TIME) {
+            send({ type: "select.timeout" })
+          }
         }
+        
       },
-      displayOK: () => {
+      displayOk: () => {
         setStore((s) => ({
           ...s,
           stringsState: {
@@ -182,6 +200,7 @@ function App() {
             [s.selectedString]: 'ok'
           }
         }));
+        setStore(displayCorrect);
       },
       displayFail: () => {
         setStore((s) => ({
@@ -191,8 +210,26 @@ function App() {
             [s.selectedString]: 'fail'
           }
         }));
+        setStore(displayCorrect);
       },
-      //clearState: ({ context, event }) => {},
+      clearState: () => {
+        setStore(initStore);
+      },
+      clearStringsState: () => {
+        setStore((s) => ({
+          ...s,
+          selectedStringProgress: 0,
+          stringsState: {
+            6: 'pending',
+            5: 'pending',
+            4: 'pending',
+            3: 'pending',
+            2: 'pending',
+            1: 'pending',
+          },
+          displayNotes: new Set(),
+        }));
+      }
       //displayEnd: ({ context, event }) => {},
     },
     guards: {
@@ -236,17 +273,6 @@ function App() {
       } else {
         send({ "type": "select.fail"});
       }
-
-      const ks: Array<string> = Object.keys(StringNotes[selectedString]);
-      const idx = ks.find((k) => new Set(StringNotes[selectedString][k]).has(selectedNote));
-
-      const displayCoord = `${stringNum},${idx}`;
-      setStore((s) => ({
-        ...s,
-        displayNotes: new Set([...s.displayNotes, displayCoord])
-      }));
-      
-      
     }
   }, [selectedString, selectedNote]);
   
@@ -259,10 +285,10 @@ function App() {
             {selectedNote}
           </span>
         </div>
-        <button id={style.resetBtn}>
+        <button id={style.resetBtn} onClick={() => send({ type: "session.repeat" })}>
           <i className="fa-solid fa-arrows-rotate"></i>
         </button>
-        <button id={style.nextBtn}>
+        <button id={style.nextBtn}  onClick={() => send({ type: "session.next" })}>
           <i className="fa-solid fa-forward"></i>
         </button>
       </div>
@@ -277,7 +303,7 @@ function App() {
                      state={stringsState[stringNum]}
                      progress={(stringNum === selectedString) ? selectedStringProgress : null } />
           } else if (col === 0 || col === 7 || row === 0 || row === 14) {
-            return <FretMarker key={`marker-${row}-${col}`} row={row} />
+            return <FretMarker key={`marker-${row}-${col}`} row={row} col={col} />
           } else if (row === 1 && row <= 14) {
             return <div key={`empty-${row}-${col}`}></div>;
           } else {
