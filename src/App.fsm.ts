@@ -1,19 +1,20 @@
 import { createMachine } from "xstate";
 
 export type AppFsmEvents =
-  | { type: "time", ellapsed: number }
-  | { type: "select.ok" }
-  | { type: "select.fail" }
   | { type: "note.selected" }
+  | { type: "select.fail" }
+  | { type: "select.ok" }
   | { type: "select.timeout" }
-  | { type: "string.selected" }
   | { type: "session.next" }
   | { type: "session.repeat" }
-  | { type: "cleared" };
+  | { type: "start" }
+  | { type: "string.selected" }
+  | { type: "string.start" }
+  | { type: "time", ellapsed: number };
 
 export const machine = createMachine(
   {
-    id: "Fretrain state (copy)",
+    id: "TrainStrings",
     initial: "NewSession",
     states: {
       NewSession: {
@@ -22,12 +23,12 @@ export const machine = createMachine(
         },
         after: {
           "0": {
-            target: "#Fretrain state (copy).TrainNotes",
+            target: "#TrainStrings.TrainSession",
             actions: [],
           },
         },
       },
-      TrainNotes: {
+      TrainSession: {
         initial: "WaitingNote",
         states: {
           WaitingNote: {
@@ -36,6 +37,16 @@ export const machine = createMachine(
             },
             on: {
               "note.selected": {
+                target: "TrainStart",
+              },
+            },
+          },
+          TrainStart: {
+            entry: {
+              type: "displayStart",
+            },
+            on: {
+              start: {
                 target: "WaitingString",
               },
             },
@@ -46,10 +57,20 @@ export const machine = createMachine(
             },
             on: {
               "string.selected": {
+                target: "StringStart",
+              },
+            },
+          },
+          StringStart: {
+            entry: {
+              type: "stringStart",
+            },
+            exit: {
+              type: "startTimer",
+            },
+            on: {
+              "string.start": {
                 target: "StringProgress",
-                actions: {
-                  type: "startTimer",
-                },
               },
             },
           },
@@ -124,7 +145,7 @@ export const machine = createMachine(
         },
         after: {
           "0": {
-            target: "#Fretrain state (copy).TrainNotes.WaitingString",
+            target: "#TrainStrings.TrainSession.WaitingString",
             actions: [],
           },
         },

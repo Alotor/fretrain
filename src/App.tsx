@@ -35,6 +35,10 @@ function useAppFsm (store: Store, dispatch: (action: StoreAction) => void): [ st
         }
       },
 
+      stringStart: () => {
+        send({type: "string.start"});
+      },
+
       startTimer: () => {
         timeSinceStartRef.current = new Date().getTime();
         const id = setInterval(() => {
@@ -53,7 +57,7 @@ function useAppFsm (store: Store, dispatch: (action: StoreAction) => void): [ st
           timerRef.current = null;
         }
       },
-      
+
       updateProgress: ({ event }) => {
         if (event.type === "time") {
           const progress = (event.ellapsed / TotalTime) * 100;
@@ -63,6 +67,10 @@ function useAppFsm (store: Store, dispatch: (action: StoreAction) => void): [ st
           }
         }
       },
+      displayStart: () => {
+        send({ type: "start" });
+      },
+
       displayOk: () => {
         dispatch({ type: "update-string-state", string: store.selectedString, status: "ok" });
         dispatch({ type: "display-correct", string: store.selectedString });
@@ -93,7 +101,9 @@ function useAppFsm (store: Store, dispatch: (action: StoreAction) => void): [ st
 
 function App() {
   const [ store, dispatch ] = useStore();
-  const [ _, send ] = useAppFsm(store, dispatch);
+  const [ _state, send ] = useAppFsm(store, dispatch);
+
+  // console.log(_state.value, store);
 
   const mainRef = useRef<HTMLDivElement>(null);
   const rows = new Array(15).fill(undefined).map((_, i) => i);
