@@ -1,13 +1,14 @@
 import { useRef, useEffect, useCallback} from 'react';
 
 import { useAppFsm } from "@/App.fsm";
-import css from '@/App.module.css';
+import css from './App.module.css';
 import { useStore } from "@/store";
 
 import FretMarker from "@/components/FretMarker";
 import NoteButton from "@/components/NoteButton";
 import StringInfo from "@/components/StringInfo";
 import Header from "@/components/Header";
+import OptionsDialog from "@/components/OptionsDialog";
 
 
 function App() {
@@ -26,6 +27,9 @@ function App() {
     selectedStringProgress,
     stringsState,
     displayNotes,
+    showOptions,
+    paused,
+    showNotes
   } = store;
 
   useEffect(() => {
@@ -55,6 +59,22 @@ function App() {
     send({ type: "session.next" });
   }, []);
 
+  const handleShowNotes = useCallback(() => {
+    dispatch({ type: "toggle-show-notes" });
+  }, []);
+
+  const handleTogglePause = useCallback(() => {
+    dispatch({ type: "toggle-pause" });
+  }, []);
+
+  const handleOpenOptions = useCallback(() => {
+    dispatch({ type: "open-options" });
+  }, []);
+
+  const handleCloseOptions = useCallback(() => {
+    dispatch({ type: "close-options" });
+  }, []);
+
   const fretElements = rows.map((_, row) => cols.map((_, col) => {
     const stringNum = (6 - col + 1);
 
@@ -73,18 +93,27 @@ function App() {
                          stringNum={stringNum}
                          fretNum={fretNum}
                          display={displayNotes.has(`${stringNum},${fretNum}`)}
+                         showHint={showNotes}
                          onClick={handleClickNote} />
     }
   }));
 
+  const optionsDialog = showOptions? <OptionsDialog onClose={handleCloseOptions} /> : null;
+
   return (
     <div ref={mainRef} className={css.main}>
       <Header selectedNote={selectedNote}
+              paused={paused}
+              showNotes={showNotes}
+              onShowNotes={handleShowNotes}
+              onTogglePause={handleTogglePause}
+              onOpenOptions={handleOpenOptions}
               onRefresh={handleRefresh}
               onNext={handleNext} />
       <div className={css.fretboard}>
         {fretElements}
       </div>
+      {optionsDialog}
     </div>
   )
 }

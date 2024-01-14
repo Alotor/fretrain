@@ -1,4 +1,4 @@
-import { useRef }  from 'react';
+import { useRef, useEffect }  from 'react';
 import { createMachine } from "xstate";
 import { useMachine } from '@xstate/react';
 
@@ -165,7 +165,12 @@ const machine = createMachine(
 
 export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void): [ state: unknown, send: (event: AppFsmEvents) => void ] {
   const timerRef = useRef<number | null>(null);
-  const timeSinceStartRef = useRef<number | null>(null);
+  const lastTimeRef = useRef<number | null>(null);
+  const storeRef = useRef<Store>(store);
+
+  useEffect(() => {
+    storeRef.current = store;
+  }, [store]);
 
   const [ state, send ] = useMachine(machine.provide({
     actions: {
@@ -188,13 +193,16 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
       },
 
       startTimer: () => {
-        timeSinceStartRef.current = new Date().getTime();
+        lastTimeRef.current = new Date().getTime();
         const id = setInterval(() => {
-          const startTime = timeSinceStartRef.current;
-          if (startTime) {
-            const ellapsed = (new Date().getTime() - startTime) / 1000;
+          const store = storeRef.current;
+          const currentTime = new Date().getTime();
+          if (!store.paused && !store.showOptions) {
+            const lastTime = lastTimeRef.current!;
+            const ellapsed = (currentTime - lastTime) / 1000;
             send({type: "time", ellapsed});
           }
+          lastTimeRef.current = currentTime;
         }, 16.6);
         timerRef.current = id;
       },
@@ -210,7 +218,7 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
         if (event.type === "time") {
           const progress = (event.ellapsed / TotalTime) * 100;
           dispatch({ type: "update-string-progress", progress });
-          if (event.ellapsed >= TotalTime) {
+          if (store.selectedStringProgress >= 100) {
             send({ type: "select.timeout" })
           }
         }

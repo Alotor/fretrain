@@ -9,6 +9,9 @@ export type Store = {
   selectedStringProgress: number;
   stringsState: Record<string, StringState>;
   displayNotes: Set<string>;
+  showOptions: boolean;
+  paused: boolean;
+  showNotes: boolean;
 };
 
 function initStore(): Store {
@@ -24,7 +27,10 @@ function initStore(): Store {
       2: 'pending',
       1: 'pending',
     },
-    displayNotes: new Set()
+    displayNotes: new Set(),
+    paused: false,
+    showOptions: false,
+    showNotes: false
   };
 }
 export type StoreAction =
@@ -34,7 +40,12 @@ export type StoreAction =
   | { type: "update-string-state"; string: number; status: 'ok' | 'fail' }
   | { type: "clear-strings-state" }
   | { type: "display-correct"; string: number }
-  | { type: "reset" };
+  | { type: "reset" }
+  | { type: "toggle-show-notes" }
+  | { type: "toggle-pause" }
+  | { type: "open-options" }
+  | { type: "close-options" }
+;
 
 export function useStore() {
   const reducer = useCallback(produce((store: Store, action: StoreAction) => {
@@ -45,7 +56,7 @@ export function useStore() {
       store.selectedStringProgress = 0;
       store.stringsState[action.string] = "next";
     } else if (action.type === "update-string-progress") {
-      store.selectedStringProgress = action.progress;
+      store.selectedStringProgress += action.progress;
     } else if (action.type === "update-string-state") {
       store.stringsState[action.string] = action.status;
     } else if (action.type === "clear-strings-state") {
@@ -62,6 +73,14 @@ export function useStore() {
       store.displayNotes.add(displayCoord);
     } else if (action.type === "reset") {
       return initStore();
+    } else if (action.type === "toggle-show-notes") {
+      store.showNotes = !store.showNotes;
+    } else if (action.type === "toggle-pause") {
+      store.paused = !store.paused;
+    } else if (action.type === "open-options") {
+      store.showOptions = true;
+    } else if (action.type === "close-options") {
+      store.showOptions = false;
     }
   }), []);
 

@@ -31,3 +31,13 @@
   opacity: 0;
 }
 
+.noteButton.hint {
+  opacity: 1;
+  color: white;
+  background: none;
+}
+
+.noteButton.hint::before {
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: none;
+}
