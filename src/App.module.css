@@ -15,10 +15,24 @@
   font-family: Roboto;
 }
 
+:global(#app) {
+  background: black;
+  display: flex;
+  justify-content: center;
+}
+
+
 .main {
   display: flex;
   flex-direction: column;
 }
+
+@media only screen and (min-width: 768px) {
+  .main {
+    width: 768px;
+  }
+}
+
 
 .fretboard {
   flex: 1;
