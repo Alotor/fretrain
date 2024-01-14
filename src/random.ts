@@ -1,3 +1,4 @@
+import type { StringState } from "@/store";
 
 export function randomNote(accidentals: boolean = false) {
   const notes =
@@ -8,9 +9,7 @@ export function randomNote(accidentals: boolean = false) {
   return notes[Math.floor(notes.length * Math.random())];
 }
 
-type StringState = 'ok' | 'fail' | 'next' | 'pending';
-
-export function nextString(state: Record<number, StringState>): number | null {
+export function nextRandomString(state: Record<number, StringState>): number | null {
   let pending = [] as Array<number>;
 
   for (let i = 1; i <= 6; i++) {
@@ -26,3 +25,9 @@ export function nextString(state: Record<number, StringState>): number | null {
   const ridx = Math.floor(Math.random() * pending.length);
   return pending[ridx];
 }
+
+
+export default {
+  randomNote,
+  nextRandomString,
+};

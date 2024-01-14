@@ -1,5 +1,16 @@
 import { createMachine } from "xstate";
 
+export type AppFsmEvents =
+  | { type: "time", ellapsed: number }
+  | { type: "select.ok" }
+  | { type: "select.fail" }
+  | { type: "note.selected" }
+  | { type: "select.timeout" }
+  | { type: "string.selected" }
+  | { type: "session.next" }
+  | { type: "session.repeat" }
+  | { type: "cleared" };
+
 export const machine = createMachine(
   {
     id: "Fretrain state (copy)",
@@ -9,8 +20,11 @@ export const machine = createMachine(
         entry: {
           type: "clearState",
         },
-        always: {
-          target: "TrainNotes",
+        after: {
+          "0": {
+            target: "#Fretrain state (copy).TrainNotes",
+            actions: [],
+          },
         },
       },
       TrainNotes: {
@@ -108,22 +122,20 @@ export const machine = createMachine(
         entry: {
           type: "clearStringsState",
         },
-        always: {
-          target: "#Fretrain state (copy).TrainNotes.WaitingString",
+        after: {
+          "0": {
+            target: "#Fretrain state (copy).TrainNotes.WaitingString",
+            actions: [],
+          },
         },
       },
     },
     types: {
-      events: {} as
-        | { type: "time", ellapsed: number }
-        | { type: "select.ok" }
-        | { type: "select.fail" }
-        | { type: "note.selected" }
-        | { type: "select.timeout" }
-        | { type: "string.selected" }
-        | { type: "session.next" }
-        | { type: "session.repeat" },
+      events: {} as AppFsmEvents,
     },
   },
 );
+
+
+
 export default machine;

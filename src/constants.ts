@@ -1,3 +1,5 @@
+export const TotalTime = 5;
+
 export const NoteColors: Record<string, string> = {
   "A": "#e88d49",
   "B": "#918f8f",

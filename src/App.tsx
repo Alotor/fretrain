@@ -1,166 +1,38 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import style from './App.module.css';
-import classnames from "classnames";
-import { NoteColors, StringNotes } from "./constants.ts";
+import { useRef, useEffect, useCallback} from 'react';
+import { TotalTime } from "./constants.ts";
 import { useMachine } from '@xstate/react';
-import AppFsm from "./App.fsm";
-import * as random from "./random";
+import { enableMapSet } from "immer";
 
-type FretMarkerProps = {
-  row: number;
-  col: number;
-}
+import css from '@/App.module.css';
+import random from "@/random";
+import AppFsm, { AppFsmEvents } from "@/App.fsm";
+import FretMarker from "@/components/FretMarker";
+import NoteButton from "@/components/NoteButton";
+import StringInfo from "@/components/StringInfo";
+import Header from "@/components/Header";
 
-const TOTAL_TIME = 5;
+import { Store, StoreAction, useStore } from "@/store";
 
-function FretMarker({ row, col }: FretMarkerProps) {
-  // Fret markers on frets 3, 5, 7, 9 and 12
-  const mark = (row === 4 || row === 6 || row === 8 || row === 10 || row === 13) ? (
-    <div className={classnames(style.mark, {
-      [style.twelve]: row=== 13,
-      [style.right]: col === 7
-    })}></div>
-  ) : null; 
+enableMapSet();
 
-  const fret = (row > 1) ? (
-    <div className={classnames(style.fret, {[style.nut]: row === 2 })}></div>
-  ) : null;
-  
-  return (
-    <div className={style.cont}>
-      {mark}
-      {fret}
-    </div>
-  );
-}
-
-type StringState = 'ok' | 'fail' | 'next' | 'pending';
-type StringPanelProps = {
-  state: StringState;
-  progress: number | null
-}
-
-function StringPanel({ state, progress }: StringPanelProps) {
-  const isOk = state === "ok";
-  const isFail = state === "fail";
-  const isNext = state === "next";
-  const dasharray = `calc(${progress} * 31.4 / 100) 31.4`;
-  
-  return (
-    <div className={classnames(style.string, {[style.ok]: isOk, [style.fail]: isFail, [style.next]: isNext})}>
-      <i className={style.check}></i>
-
-      { (progress && isNext) ? (
-          <svg viewBox="0 0 20 20" width="16" height="16" className={style["timer-circle"]}>
-            <circle r="5" cx="10" cy="10" fill="transparent"
-                    stroke="#e05659"
-                    strokeWidth="10"
-                    strokeDasharray={dasharray}
-                    transform="rotate(-90) translate(-20)" />
-          </svg>
-        ) : null}
-    </div>
-  );
-}
-
-function displayCorrect(s: Store): Store {
-  const ks: Array<string> = Object.keys(StringNotes[s.selectedString]);
-  const idx = ks.find((k) => new Set(StringNotes[s.selectedString][k]).has(s.selectedNote));
-
-  const displayCoord = `${s.selectedString},${idx}`;
-
-  return {
-    ...s,
-    displayNotes: new Set([...s.displayNotes, displayCoord])
-  }
-}
-
-type FretButtonProps = {
-  stringNum: number;
-  fretNum: number;
-  display: boolean;
-  onClick: (stringNum: number, note: string, event: React.MouseEvent) => void;
-};
-
-function FretButton({ stringNum, fretNum, display, onClick }: FretButtonProps) {
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  const note = StringNotes[stringNum][fretNum][0];
-  const color = NoteColors[note];
-
-  const handleClickNote = useCallback((ev: React.MouseEvent) => {
-    onClick(stringNum, note, ev);
-  }, [onClick]);
-
-  useEffect(() => {
-    btnRef.current?.style.setProperty("--color", color);
-  }, [color]);
-  
-  return (
-    <button
-      ref={btnRef}
-      onClick={handleClickNote}
-      data-note={note}
-      className={classnames(style["fretboard-btn"], {[style.hidden]: !display})}>
-      {note}
-    </button>
-  );
-}
-
-type Store = {
-  selectedNote: string;
-  selectedString: number;
-  selectedStringProgress: number;
-  stringsState: Record<string, StringState>;
-  displayNotes: Set<string>;
-};
-
-function initStore(): Store {
-  return {
-    selectedNote: "C",
-    selectedString: 1,
-    selectedStringProgress: 0,
-    stringsState: {
-      6: 'pending',
-      5: 'pending',
-      4: 'pending',
-      3: 'pending',
-      2: 'pending',
-      1: 'pending',
-    },
-    displayNotes: new Set()
-  };
-}
-
-function App() {
-  const [store, setStore] = useState<Store>(initStore);
-
+function useAppFsm (store: Store, dispatch: (action: StoreAction) => void): [ state: unknown, send: (event: AppFsmEvents) => void ] {
   const timerRef = useRef<number | null>(null);
   const timeSinceStartRef = useRef<number | null>(null);
-  const [_state, send] = useMachine(AppFsm.provide({
+
+  const [ state, send ] = useMachine(AppFsm.provide({
     actions: {
       selectNote: () => {
         const note = random.randomNote();
-        setStore((s) => ({ ...s, selectedNote: note}));
-        send({type: "note.selected"});
+        dispatch({ type: "select-note", note });
+        send({ type: "note.selected" });
       },
-      selectString: () => {
-        setStore((s: Store) => {
-          const selString = random.nextString(s.stringsState);
 
-          if (!selString) {
-            return s;
-          }
-          return {
-            ...s,
-            selectedString: selString,
-            selectedStringProgress: 0,
-            stringsState: {
-              ...s.stringsState,
-              [selString]: "next",
-          }}
-        });
-        send({type: "string.selected"});
+      selectString: () => {
+        const selString = random.nextRandomString(store.stringsState);
+        if (selString) {
+          dispatch({ type: "select-string", string: selString });
+          send({ type: "string.selected" });
+        }
       },
 
       startTimer: () => {
@@ -174,61 +46,38 @@ function App() {
         }, 16.6);
         timerRef.current = id;
       },
+
       stopTimer: () => {
         if (timerRef.current) {
           clearInterval(timerRef.current);
           timerRef.current = null;
         }
       },
+      
       updateProgress: ({ event }) => {
         if (event.type === "time") {
-          setStore((s) => ({
-            ...s,
-            selectedStringProgress: (event.ellapsed / TOTAL_TIME) * 100
-          }));
-          if (event.ellapsed >= TOTAL_TIME) {
+          const progress = (event.ellapsed / TotalTime) * 100;
+          dispatch({ type: "update-string-progress", progress });
+          if (event.ellapsed >= TotalTime) {
             send({ type: "select.timeout" })
           }
         }
-        
       },
       displayOk: () => {
-        setStore((s) => ({
-          ...s,
-          stringsState: {
-            ...s.stringsState,
-            [s.selectedString]: 'ok'
-          }
-        }));
-        setStore(displayCorrect);
+        dispatch({ type: "update-string-state", string: store.selectedString, status: "ok" });
+        dispatch({ type: "display-correct", string: store.selectedString });
       },
+
       displayFail: () => {
-        setStore((s) => ({
-          ...s,
-          stringsState: {
-            ...s.stringsState,
-            [s.selectedString]: 'fail'
-          }
-        }));
-        setStore(displayCorrect);
+        dispatch({ type: "update-string-state", string: store.selectedString, status: "fail" });
+        dispatch({ type: "display-correct", string: store.selectedString });
       },
+
       clearState: () => {
-        setStore(initStore);
+        dispatch({ type: "reset" });
       },
       clearStringsState: () => {
-        setStore((s) => ({
-          ...s,
-          selectedStringProgress: 0,
-          stringsState: {
-            6: 'pending',
-            5: 'pending',
-            4: 'pending',
-            3: 'pending',
-            2: 'pending',
-            1: 'pending',
-          },
-          displayNotes: new Set(),
-        }));
+        dispatch({ type: "clear-strings-state" });
       }
       //displayEnd: ({ context, event }) => {},
     },
@@ -239,8 +88,13 @@ function App() {
     }
   }));
 
-  //  console.log(state.value);
-  
+  return [state, send];
+};
+
+function App() {
+  const [ store, dispatch ] = useStore();
+  const [ _, send ] = useAppFsm(store, dispatch);
+
   const mainRef = useRef<HTMLDivElement>(null);
   const rows = new Array(15).fill(undefined).map((_, i) => i);
   const cols = new Array(8).fill(undefined).map((_, i) => i);
@@ -253,9 +107,6 @@ function App() {
     displayNotes,
   } = store;
 
-  //console.log(displayNotes);
-
-  // console.log(">>selected", selectedString, selectedNote, selectedStringProgress);
   useEffect(() => {
     const buttonElem = document.querySelector("[data-note]");
     if (mainRef.current && buttonElem) {
@@ -266,59 +117,55 @@ function App() {
   }, []);
 
   const handleClickNote = useCallback((stringNum: number, note: string) => {
-    // console.log(stringNum, note, (stringNum === store.selectedString), (store.selectedNote === note), selectedString, selectedNote);
     if (stringNum === selectedString) {
       if (selectedNote === note) {
-        send({ "type": "select.ok"});
+        send({ "type": "select.ok" });
       } else {
-        send({ "type": "select.fail"});
+        send({ "type": "select.fail" });
       }
     }
   }, [selectedString, selectedNote]);
-  
+
+  const handleRefresh = useCallback(() => {
+    send({ type: "session.repeat" });
+  }, []);
+
+  const handleNext = useCallback(() => {
+    send({ type: "session.next" });
+  }, []);
+
+  const fretElements = rows.map((_, row) => cols.map((_, col) => {
+    const stringNum = (6 - col + 1);
+
+    if (row === 0 && col > 0 && col < 7) {
+      return <StringInfo
+               key={`string-${stringNum}`}
+               state={stringsState[stringNum]}
+               progress={(stringNum === selectedString) ? selectedStringProgress : null } />
+    } else if (col === 0 || col === 7 || row === 0 || row === 14) {
+      return <FretMarker key={`marker-${row}-${col}`} row={row} col={col} />
+    } else if (row === 1 && row <= 14) {
+      return <div key={`empty-${row}-${col}`}></div>;
+    } else {
+      const fretNum = row - 1;
+      return <NoteButton key={`fret-${stringNum}-${fretNum}`}
+                         stringNum={stringNum}
+                         fretNum={fretNum}
+                         display={displayNotes.has(`${stringNum},${fretNum}`)}
+                         onClick={handleClickNote} />
+    }
+  }));
+
   return (
-    <div ref={mainRef} className={style.main}>
-      <div className={style.info}>
-        <div className={style.text}>
-          Find:&nbsp;
-          <span id={style.selectedNoteLabel} style={{background: NoteColors[selectedNote]}}>
-            {selectedNote}
-          </span>
-        </div>
-        <button id={style.resetBtn} onClick={() => send({ type: "session.repeat" })}>
-          <i className="fa-solid fa-arrows-rotate"></i>
-        </button>
-        <button id={style.nextBtn}  onClick={() => send({ type: "session.next" })}>
-          <i className="fa-solid fa-forward"></i>
-        </button>
-      </div>
-
-      <div className={style.fretboard}>
-        {rows.map((_, row) => cols.map((_, col) => {
-          const stringNum = (6 - col + 1);
-
-          if (row === 0 && col > 0 && col < 7) {
-            return <StringPanel
-                     key={`string-${stringNum}`}
-                     state={stringsState[stringNum]}
-                     progress={(stringNum === selectedString) ? selectedStringProgress : null } />
-          } else if (col === 0 || col === 7 || row === 0 || row === 14) {
-            return <FretMarker key={`marker-${row}-${col}`} row={row} col={col} />
-          } else if (row === 1 && row <= 14) {
-            return <div key={`empty-${row}-${col}`}></div>;
-          } else {
-            const fretNum = row - 1;
-            return <FretButton key={`fret-${stringNum}-${fretNum}`}
-                               stringNum={stringNum}
-                               fretNum={fretNum}
-                               display={displayNotes.has(`${stringNum},${fretNum}`)}
-                               onClick={handleClickNote} />
-          }
-        }))}
+    <div ref={mainRef} className={css.main}>
+      <Header selectedNote={selectedNote}
+              onRefresh={handleRefresh}
+              onNext={handleNext} />
+      <div className={css.fretboard}>
+        {fretElements}
       </div>
     </div>
   )
 }
 
 export default App;
-
