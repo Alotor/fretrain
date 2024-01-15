@@ -1,25 +1,25 @@
 export const TotalTime = 5;
 
 export const NoteColors: Record<string, string> = {
-  "A": "#e88d49",
-  "B": "#918f8f",
-  "C": "#9abc56",
-  "D": "#7558a1",
-  "E": "#5b7dc0",
-  "F": "#e05659",
-  "G": "#2d467b",
+  "A": "var(--note-a)",
+  "B": "var(--note-b)",
+  "C": "var(--note-c)",
+  "D": "var(--note-d)",
+  "E": "var(--note-e)",
+  "F": "var(--note-f)",
+  "G": "var(--note-g)",
 
-  "A#": "#e88d49",
-  "C#": "#9abc56",
-  "D#": "#7558a1",
-  "F#": "#e05659",
-  "G#": "#2d467b",
+  "A#": "var(--note-a-sharp)",
+  "C#": "var(--note-c-sharp)",
+  "D#": "var(--note-d-sharp)",
+  "F#": "var(--note-f-sharp)",
+  "G#": "var(--note-g-sharp)",
 
-  "Ab": "#e88d49",
-  "Bb": "#918f8f",
-  "Db": "#7558a1",
-  "Eb": "#5b7dc0",
-  "Gb": "#2d467b",
+  "Ab": "var(--note-a-flat)",
+  "Bb": "var(--note-b-flat)",
+  "Db": "var(--note-d-flat)",
+  "Eb": "var(--note-e-flat)",
+  "Gb": "var(--note-g-flat)",
 };
 
 export const StringNotes: Record<number, Record<string, Array<string>>> = {

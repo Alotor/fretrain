@@ -1,3 +1,23 @@
+:root {
+  --note-c: #d5700b;
+  --note-g: #bdbd00;
+  --note-d: #70b32d;
+  --note-a: #2db32d;
+  --note-e: #2db370;
+  --note-b: #2db3b3;
+  --note-f-sharp: #2d70b3;
+  --note-c-sharp: #2d2db3;
+  --note-g-sharp: #702db3;
+  --note-d-sharp: #b32db3;
+  --note-a-sharp: #b32d70;
+  --note-f: #b32d2d;
+  --note-g-flat: #2d70b3;
+  --note-d-flat: #2d2db3;
+  --note-a-flat: #702db3;
+  --note-e-flat: #b32db3;
+  --note-b-flat: #b32d70;
+}
+
 :global(*) {
   font-family: Roboto;
   box-sizing: border-box;

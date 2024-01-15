@@ -31,7 +31,10 @@ function FretButton({ stringNum, fretNum, display, showHint, onClick }: FretButt
       ref={btnRef}
       onClick={handleClickNote}
       data-note={note}
-      className={classnames(css.noteButton, {[css.hidden]: !display, [css.hint]: (showHint && !display && !accidental)})}>
+      className={classnames(css.noteButton, {
+        [css.hidden]: !display,
+        [css.hint]: (showHint && !display && !accidental)
+      })}>
       {note}
     </button>
   );
