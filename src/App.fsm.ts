@@ -4,7 +4,7 @@ import { useMachine } from '@xstate/react';
 
 import { useOptionsStorage } from "@/OptionsStorage";
 import { Store, StoreAction } from "@/store";
-import random from "@/random";
+import utils from "@/utils";
 
 export type AppFsmEvents =
   | { type: "note.selected" }
@@ -176,13 +176,13 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
   const [ state, send ] = useMachine(machine.provide({
     actions: {
       selectNote: () => {
-        const note = random.randomNote();
+        const note = utils.selectNote(options);
         dispatch({ type: "select-note", note });
         send({ type: "note.selected" });
       },
 
       selectString: () => {
-        const selString = random.nextRandomString(store.stringsState);
+        const selString = utils.selectString(options, store.stringsState);
         if (selString) {
           dispatch({ type: "select-string", string: selString });
           send({ type: "string.selected" });
