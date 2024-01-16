@@ -1,5 +1,3 @@
-export const TotalTime = 5;
-
 export const NoteColors: Record<string, string> = {
   "A": "var(--note-a)",
   "B": "var(--note-b)",

@@ -2,7 +2,7 @@ import { useRef, useEffect }  from 'react';
 import { createMachine } from "xstate";
 import { useMachine } from '@xstate/react';
 
-import { TotalTime } from "@/constants";
+import { useOptionsStorage } from "@/OptionsStorage";
 import { Store, StoreAction } from "@/store";
 import random from "@/random";
 
@@ -167,6 +167,7 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
   const timerRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
   const storeRef = useRef<Store>(store);
+  const [ options, _ ] = useOptionsStorage();
 
   useEffect(() => {
     storeRef.current = store;
@@ -216,7 +217,7 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
 
       updateProgress: ({ event }) => {
         if (event.type === "time") {
-          const progress = (event.ellapsed / TotalTime) * 100;
+          const progress = (event.ellapsed / options.speed) * 100;
           dispatch({ type: "update-string-progress", progress });
           if (store.selectedStringProgress >= 100) {
             send({ type: "select.timeout" })
