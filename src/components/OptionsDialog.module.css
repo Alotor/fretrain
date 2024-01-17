@@ -14,7 +14,7 @@
 }
 
 .options {
-  padding: 3.5rem 1rem;
+  padding: 3.5rem 0.5rem;
   position: relative;
   width: 80%;
   height: 80%;
@@ -56,4 +56,66 @@
 
 .optionTitle {
   font-weight: bold;
+  border-bottom: 1px solid silver;
+  margin-bottom: 0.25rem;
+}
+
+.optionsSpeed {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.optionsSpeed button {
+  padding: 0.5rem 0.5rem;
+}
+
+.optionsSpeed input {
+  font-size: 1rem;
+  padding: 0 0.75rem;
+}
+
+.optionsSpeed :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.optionsSection input[data-string],
+.optionsSection input[data-note] {
+  display: none;
+}
+
+.stringLabel,
+.noteLabel {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+}
+
+.stringLabel {
+  background: black;
+}
+
+.noteLabel {
+  background: var(--note-color);
+}
+
+.stringLabel[data-checked='false'],
+.noteLabel[data-checked='false'] {
+  background: #ddd;
+}
+
+.optionsStrings,
+.optionsNotes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.emptyNote {
+  width: 24px;
+  height: 24px;
 }

@@ -18,6 +18,7 @@ export type AppFsmEvents =
   | { type: "string.start" }
   | { type: "time", ellapsed: number };
 
+
 const machine = createMachine(
   {
     id: "TrainStrings",

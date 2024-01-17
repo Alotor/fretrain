@@ -2,6 +2,11 @@ import css from './OptionsDialog.module.css';
 import React, { useCallback } from "react";
 import { useOptionsStorage } from "@/OptionsStorage";
 import { produce } from "immer";
+import {NoteColors} from "@/constants";
+
+const notes = ["A", "B", "C", "D", "E", "F", "G"];
+const sharps = ["A#", "", "C#", "D#", "", "F#", "G#"];
+const flats = ["Ab", "Bb", "", "Db", "Eb", "", "Gb"];
 
 type OptionsDialogProps = {
   onClose: () => void;
@@ -18,7 +23,6 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
 
   const handleChangeAppMode = useCallback(updateAttr.bind(null, "appMode"), []);
   const handleChangeSpeed = useCallback(updateAttr.bind(null, "speed"), []);
-  const handleChangeAccidentals = useCallback(updateAttr.bind(null, "accidentals"), []);
   const handleChangeDetMode = useCallback(updateAttr.bind(null, "deterministicNoteMode"), []);
 
   const handleChangeUseString = useCallback((e: React.FormEvent) => {
@@ -35,8 +39,24 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
     }));
   }, []);
 
-  const notes = ["A", "B", "C", "D", "E", "F", "G"];
-  
+  const handleChangeAccidentals = useCallback((e: React.FormEvent) => {
+    const target = e.target! as HTMLInputElement
+    setState(produce((s) => {
+      s.accidentals = target.value as "on" | "off";
+      if (s.accidentals === "off") {
+        const useNotes = new Set(s.useNotes);
+        for (let sn of sharps) {
+          useNotes.delete(sn);
+        }
+        for (let sn of flats) {
+          useNotes.delete(sn);
+        }
+        console.log("??", useNotes);
+        s.useNotes = [...useNotes];
+      }
+    }));
+  }, [])
+
   const handleChangeUseNotes = useCallback((e: React.FormEvent) => {
     const target = e.target! as HTMLInputElement
     const note = target.dataset["note"] || "C";
@@ -50,6 +70,19 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
       s.useNotes = [...useNotes];
     }));
   }, []);
+
+  const handleClickPlus = useCallback(() => {
+    setState(produce((s) => {
+      s.speed = s.speed + 1;
+    }));
+  }, []);
+
+  const handleClickMinus = useCallback(() => {
+    setState(produce((s) => {
+      s.speed = Math.max(0, s.speed - 1);
+    }));
+  }, []);
+  
 
   const useStrings = new Set(state.useStrings);
   const useNotes = new Set(state.useNotes);
@@ -91,11 +124,11 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
 
           <div className={css.optionsSection}>
             <label className={css.optionTitle}>Speed</label>
-            <div>
+            <div className={css.optionsSpeed}>
               <input type="number" value={state.speed}
                      onChange={handleChangeSpeed }></input>
-              <button><i className="fa-solid fa-plus"></i></button>
-              <button><i className="fa-solid fa-minus"></i></button>
+              <button><i className="fa-solid fa-plus" onClick={handleClickPlus}></i></button>
+              <button><i className="fa-solid fa-minus" onClick={handleClickMinus}></i></button>
             </div>
           </div>
 
@@ -117,6 +150,86 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
                 <label htmlFor="accidentals-no">No</label>
               </div>
             </div>
+          </div>
+
+          
+
+          <div className={css.optionsSection}>
+            <div className={css.optionTitle}>Use strings</div>
+            <div className={css.optionsStrings}>
+              { new Array(6).fill(null).map((_, i) => (
+                <div key={"use-string-" + (i + 1)}>
+                  <input type="checkbox"
+                         checked={useStrings.has(i + 1)}
+                         name={"use-string-" + (i + 1)}
+                         id={"use-string-" + (i + 1)}
+                         onChange={handleChangeUseString}
+                         data-string={i + 1}></input>
+                  <label className={css.stringLabel}
+                         data-checked={useStrings.has(i + 1)}
+                         htmlFor={"use-string-" + (i + 1)}>{ i + 1 }</label>
+                </div>
+                ))}
+            </div>
+          </div>
+
+          <div className={css.optionsSection}>
+            <div className={css.optionTitle}>Use Notes</div>
+
+            { (state.accidentals === "on") ? (<div className={css.optionsNotes}>
+              { flats.map((note, i) => (
+                <div key={"use-note-" + note + i}>
+                  {(note !== "") ? (<>
+                    <input type="checkbox"
+                           data-note={note}
+                           name={"use-note-" + note}
+                           id={"use-note-" + note}
+                           onChange={handleChangeUseNotes}
+                           checked={useNotes.has(note)}></input>
+                    <label style={{"--note-color": NoteColors[note]} as any}
+                           className={css.noteLabel}
+                           data-checked={useNotes.has(note)}
+                           htmlFor={"use-note-" + note}>{note}</label>
+                  </>) : <div key={`flat-${i}`} className={css.emptyNote}></div> }
+                </div>
+                ))}
+            </div>) : null}
+            
+            <div className={css.optionsNotes}>
+              { notes.map((note) => (
+                <div key={"use-note-" + note}>
+                  <input type="checkbox"
+                         data-note={note}
+                         name={"use-note-" + note}
+                         id={"use-note-" + note}
+                         onChange={handleChangeUseNotes}
+                         checked={useNotes.has(note)}></input>
+                  <label style={{"--note-color": NoteColors[note]} as any}
+                         className={css.noteLabel}
+                         data-checked={useNotes.has(note)}
+                         htmlFor={"use-note-" + note}>{note}</label>
+                </div>
+                ))}
+            </div>
+
+            {(state.accidentals === "on") ? (<div className={css.optionsNotes}>
+              { sharps.map((note, i) => (
+                <div key={"use-note-" + note + i}>
+                  {(note !== "") ? (<>
+                    <input type="checkbox"
+                           data-note={note}
+                           name={"use-note-" + note}
+                           id={"use-note-" + note}
+                           onChange={handleChangeUseNotes}
+                           checked={useNotes.has(note)}></input>
+                    <label style={{"--note-color": NoteColors[note]} as any}
+                           className={css.noteLabel}
+                           data-checked={useNotes.has(note)}
+                           htmlFor={"use-note-" + note}>{note}</label>
+                  </>) : <div key={`sharp-${i}`} className={css.emptyNote}></div>}
+                </div>
+                ))}
+            </div>) : null}
           </div>
 
           <div className={css.optionsSection}>
@@ -157,40 +270,6 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
                 ></input>
                 <label htmlFor="det-mode-fifths">Fifths</label>
               </div>
-            </div>
-          </div>
-
-          <div className={css.optionsSection}>
-            <div className={css.optionTitle}>Use strings</div>
-            <div>
-              { new Array(6).fill(null).map((_, i) => (
-                <div key={"use-string-" + (i + 1)}>
-                  <input type="checkbox"
-                         checked={useStrings.has(i + 1)}
-                         name={"use-string-" + (i + 1)}
-                         id={"use-string-" + (i + 1)}
-                         onChange={handleChangeUseString}
-                         data-string={i + 1}></input>
-                  <label htmlFor={"use-string-" + (i + 1)}>{ i + 1 }</label>
-                </div>
-                ))}
-            </div>
-          </div>
-
-          <div className={css.optionsSection}>
-            <div className={css.optionTitle}>Use Notes</div>
-            <div >
-              { notes.map((note) => (
-                <div key={"use-note-" + note}>
-                  <input type="checkbox"
-                         data-note={note}
-                         name={"use-note-" + note}
-                         id={"use-note-" + note}
-                         onChange={handleChangeUseNotes}
-                         checked={useNotes.has(note)}></input>
-                  <label htmlFor={"use-note-" + note}>{note}</label>
-                </div>
-                ))}
             </div>
           </div>
         </div>
