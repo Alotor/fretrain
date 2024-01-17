@@ -94,6 +94,7 @@ function App() {
                          fretNum={fretNum}
                          display={displayNotes.has(`${stringNum},${fretNum}`)}
                          showHint={showNotes}
+                         showFlat={selectedNote.endsWith("b")}
                          onClick={handleClickNote} />
     }
   }));

@@ -28,6 +28,7 @@
   border: 0;
   margin-left: 0.25rem;
   padding-top: 2px;
+  text-transform: none;
 }
 
 .headerBtn {

@@ -245,12 +245,18 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
       },
       clearStringsState: () => {
         dispatch({ type: "clear-strings-state" });
-      }
-      //displayEnd: ({ context, event }) => {},
+      },
+      displayEnd: () => {
+        if (options.endSessionBehavior === "repeat") {
+          send({ type: "session.repeat" });
+        } else if (options.endSessionBehavior === "next") {
+          send({ type: "session.next" });
+        }
+      },
     },
     guards: {
       "strings-left": () => {
-        return !!Object.values(store.stringsState).find(v => v === 'pending');
+        return utils.isStringsLeft(options, store.stringsState);
       },
     }
   }));

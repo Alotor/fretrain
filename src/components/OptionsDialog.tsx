@@ -23,7 +23,9 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
 
   const handleChangeAppMode = useCallback(updateAttr.bind(null, "appMode"), []);
   const handleChangeSpeed = useCallback(updateAttr.bind(null, "speed"), []);
+  const handleChangeEndSessionBehavior = useCallback(updateAttr.bind(null, "endSessionBehavior"), []);
   const handleChangeDetMode = useCallback(updateAttr.bind(null, "deterministicNoteMode"), []);
+  const handleChangeDetStringMode = useCallback(updateAttr.bind(null, "deterministicStringMode"), []);
 
   const handleChangeUseString = useCallback((e: React.FormEvent) => {
     const target = e.target! as HTMLInputElement
@@ -43,17 +45,24 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
     const target = e.target! as HTMLInputElement
     setState(produce((s) => {
       s.accidentals = target.value as "on" | "off";
+      const useNotes = new Set(s.useNotes);
+
       if (s.accidentals === "off") {
-        const useNotes = new Set(s.useNotes);
-        for (let sn of sharps) {
+        for (let sn of sharps.filter(s => s !== "")) {
           useNotes.delete(sn);
         }
-        for (let sn of flats) {
+        for (let sn of flats.filter(s => s !== "")) {
           useNotes.delete(sn);
         }
-        console.log("??", useNotes);
-        s.useNotes = [...useNotes];
+      } else {
+        for (let sn of sharps.filter(s => s !== "")) {
+          useNotes.add(sn);
+        }
+        for (let sn of flats.filter(s => s !== "")) {
+          useNotes.add(sn);
+        }
       }
+      s.useNotes = [...useNotes];
     }));
   }, [])
 
@@ -133,6 +142,36 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
           </div>
 
           <div className={css.optionsSection}>
+            <div className={css.optionTitle}>End session behavior</div>
+            <div>
+              <div>
+                <input type="radio" name="endSessionBehavior" id="end-session-stop" value="stop"
+                       checked={state.endSessionBehavior === "stop"}
+                       onChange={handleChangeEndSessionBehavior}
+                ></input>
+                <label htmlFor="end-session-stop">Stop</label>
+              </div>
+
+              <div>
+                <input type="radio" name="endSessionBehavior" id="end-session-repeat" value="repeat"
+                       checked={state.endSessionBehavior === "repeat"}
+                       onChange={handleChangeEndSessionBehavior}
+                ></input>
+                <label htmlFor="end-session-repeat">Repeat</label>
+              </div>
+
+              <div>
+                <input type="radio" name="endSessionBehavior" id="end-session-next" value="next"
+                       checked={state.endSessionBehavior === "next"}
+                       onChange={handleChangeEndSessionBehavior}
+                ></input>
+                <label htmlFor="end-session-next">Next</label>
+              </div>
+              
+            </div>
+          </div>
+
+          <div className={css.optionsSection}>
             <div className={css.optionTitle}>Accidentals</div>
             <div>
               <div>
@@ -151,8 +190,6 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
               </div>
             </div>
           </div>
-
-          
 
           <div className={css.optionsSection}>
             <div className={css.optionTitle}>Use strings</div>
@@ -231,7 +268,6 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
                 ))}
             </div>) : null}
           </div>
-
           <div className={css.optionsSection}>
             <div className={css.optionTitle}>Deterministic note mode</div>
             <div>
@@ -270,6 +306,35 @@ function OptionsDialog({ onClose }: OptionsDialogProps) {
                 ></input>
                 <label htmlFor="det-mode-fifths">Fifths</label>
               </div>
+            </div>
+          </div>
+          <div className={css.optionsSection}>
+            <div className={css.optionTitle}>Deterministic string mode</div>
+            <div>
+              <div>
+                <input type="radio" name="detStringMode" id="det-string-mode-off" value="off"
+                       checked={state.deterministicStringMode === "off"}
+                       onChange={handleChangeDetStringMode}
+                ></input>
+                <label htmlFor="det-string-mode-off">Off</label>
+              </div>
+
+              <div>
+                <input type="radio" name="detStringMode" id="det-string-mode-down-up" value="down-up"
+                       checked={state.deterministicStringMode === "down-up"}
+                       onChange={handleChangeDetStringMode}
+                ></input>
+                <label htmlFor="det-string-mode-down-up">Strings 1 -&gt; 6</label>
+              </div>
+
+              <div>
+                <input type="radio" name="detStringMode" id="det-string-mode-up-down" value="up-down"
+                       checked={state.deterministicStringMode === "up-down"}
+                       onChange={handleChangeDetStringMode}
+                ></input>
+                <label htmlFor="det-string-mode-up-down">Strings 6 -&gt; 1</label>
+              </div>
+              
             </div>
           </div>
         </div>

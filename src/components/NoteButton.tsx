@@ -8,13 +8,15 @@ type FretButtonProps = {
   fretNum: number;
   display: boolean;
   showHint: boolean;
+  showFlat: boolean;
   onClick: (stringNum: number, note: string, event: React.MouseEvent) => void;
 };
 
-function FretButton({ stringNum, fretNum, display, showHint, onClick }: FretButtonProps) {
+function FretButton({ stringNum, fretNum, display, showHint, showFlat, onClick }: FretButtonProps) {
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  const note = StringNotes[stringNum][fretNum][0];
+  const notes = StringNotes[stringNum][fretNum]
+  const note = (notes.length === 1 || !showFlat) ? notes[0] : notes[1];
   const color = NoteColors[note];
   const accidental = note.endsWith("#") || note.endsWith("b");
 

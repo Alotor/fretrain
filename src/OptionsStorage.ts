@@ -7,6 +7,8 @@ export type Options = {
   speed: number;
   accidentals: "on" | "off";
   deterministicNoteMode: "off" | "seconds" | "thirds" | "fourths" | "fifths";
+  deterministicStringMode: "off" | "down-up" | "up-down";
+  endSessionBehavior: "stop" | "repeat" | "next";
   useStrings: Array<number>;
   useNotes: Array<string>;
 }
@@ -15,7 +17,9 @@ const initialOptions: Options = {
   appMode: "fix-note",
   speed: 5, // seconds per note
   accidentals: "off",
+  endSessionBehavior: "repeat",
   deterministicNoteMode: "off",
+  deterministicStringMode: "off",
   useStrings: [1, 2, 3, 4, 5, 6],
   useNotes: ["A", "B", "C", "D", "E", "F", "G"],
 };
@@ -33,7 +37,7 @@ export function useOptionsStorage() {
       return initialOptions;
     }
 
-    cache[value] = JSON.parse(value) as Options;
+    cache[value] = Object.assign({}, initialOptions, JSON.parse(value)) as Options;
     return cache[value];
   };
 
