@@ -15,8 +15,6 @@ function App() {
   const [ store, dispatch ] = useStore();
   const [ _state, send ] = useAppFsm(store, dispatch);
 
-  // console.log(_state.value, store);
-
   const mainRef = useRef<HTMLDivElement>(null);
   const rows = new Array(15).fill(undefined).map((_, i) => i);
   const cols = new Array(8).fill(undefined).map((_, i) => i);

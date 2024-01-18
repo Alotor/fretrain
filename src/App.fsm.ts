@@ -177,7 +177,7 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
   const [ state, send ] = useMachine(machine.provide({
     actions: {
       selectNote: () => {
-        const note = utils.selectNote(options);
+        const note = utils.selectNote(options, storeRef.current.selectedNote);
         dispatch({ type: "select-note", note });
         send({ type: "note.selected" });
       },
@@ -220,7 +220,7 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
         if (event.type === "time") {
           const progress = (event.ellapsed / options.speed) * 100;
           dispatch({ type: "update-string-progress", progress });
-          if (store.selectedStringProgress >= 100) {
+          if (store.selectedStringProgress + progress > 100) {
             send({ type: "select.timeout" })
           }
         }
@@ -247,11 +247,13 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
         dispatch({ type: "clear-strings-state" });
       },
       displayEnd: () => {
-        if (options.endSessionBehavior === "repeat") {
-          send({ type: "session.repeat" });
-        } else if (options.endSessionBehavior === "next") {
-          send({ type: "session.next" });
-        }
+        setTimeout(() => {
+          if (options.endSessionBehavior === "repeat") {
+            send({ type: "session.repeat" });
+          } else if (options.endSessionBehavior === "next") {
+            send({ type: "session.next" });
+          }  
+        }, options.speed * 1000);
       },
     },
     guards: {

@@ -72,7 +72,9 @@ export function useStore() {
       const displayCoord = `${sstr},${idx}`;
       store.displayNotes.add(displayCoord);
     } else if (action.type === "reset") {
-      return initStore();
+      let st =  initStore();
+      st.selectedNote = store.selectedNote;
+      return st;
     } else if (action.type === "toggle-show-notes") {
       store.showNotes = !store.showNotes;
     } else if (action.type === "toggle-pause") {
