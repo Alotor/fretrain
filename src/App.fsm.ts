@@ -7,152 +7,155 @@ import { Store, StoreAction } from "@/store";
 import utils from "@/utils";
 
 export type AppFsmEvents =
-  | { type: "note.selected" }
-  | { type: "select.fail" }
-  | { type: "select.ok" }
-  | { type: "select.timeout" }
-  | { type: "session.next" }
-  | { type: "session.repeat" }
-  | { type: "start" }
-  | { type: "string.selected" }
-  | { type: "string.start" }
-  | { type: "time", ellapsed: number };
+  | { type: "train.start" }
+  | { type: "train.next" }
+  | { type: "train.init" }
+  | { type: "train.repeat" }
+  | { type: "step.init" }
+  | { type: "step.start" }
+  | { type: "step.progress", progress: number }
+  | { type: "step.ok" }
+  | { type: "step.timeout" }
+  | { type: "step.fail" };
 
 
-const machine = createMachine(
+export const machine = createMachine(
   {
-    id: "TrainStrings",
-    initial: "NewSession",
+    id: "TrainingSession",
+    initial: "NewTraining",
     states: {
-      NewSession: {
+      NewTraining: {
         entry: {
-          type: "clearState",
+          type: "clearTrainingData",
         },
         after: {
           "0": {
-            target: "#TrainStrings.TrainSession",
+            target: "#TrainingSession.TrainingSession",
             actions: [],
           },
         },
       },
-      TrainSession: {
-        initial: "WaitingNote",
+      TrainingSession: {
+        exit: {
+          type: "saveTrainStats",
+        },
+        initial: "InitTraining",
         states: {
-          WaitingNote: {
+          InitTraining: {
             entry: {
-              type: "selectNote",
+              type: "initTrainingData",
             },
             on: {
-              "note.selected": {
-                target: "TrainStart",
+              "train.init": {
+                target: "TrainingStart",
               },
             },
           },
-          TrainStart: {
+          TrainingStart: {
             entry: {
-              type: "displayStart",
+              type: "displayTrainingStart",
             },
             on: {
-              start: {
-                target: "WaitingString",
+              "train.start": {
+                target: "InitTrainingStep",
               },
             },
           },
-          WaitingString: {
+          InitTrainingStep: {
             entry: {
-              type: "selectString",
+              type: "initTrainingStepData",
             },
             on: {
-              "string.selected": {
-                target: "StringStart",
+              "step.init": {
+                target: "StepStart",
               },
             },
           },
-          StringStart: {
+          StepStart: {
             entry: {
-              type: "stringStart",
+              type: "displayStepStart",
             },
             exit: {
               type: "startTimer",
             },
             on: {
-              "string.start": {
-                target: "StringProgress",
+              "step.start": {
+                target: "StepProgress",
               },
             },
           },
-          StringProgress: {
+          StepProgress: {
             on: {
-              time: {
-                target: "StringProgress",
+              "step.progress": {
+                target: "StepProgress",
                 actions: {
-                  type: "updateProgress",
+                  type: "updateStepProgress",
                 },
               },
-              "select.ok": {
-                target: "StringOK",
+              "step.ok": {
+                target: "StepOK",
               },
-              "select.fail": {
-                target: "StringFail",
+              "step.fail": {
+                target: "StepFail",
               },
-              "select.timeout": {
-                target: "StringFail",
+              "step.timeout": {
+                target: "StepFail",
               },
             },
           },
-          StringOK: {
+          StepOK: {
             entry: {
-              type: "displayOk",
+              type: "displayStepOk",
             },
             always: {
-              target: "StringEnd",
+              target: "StepEnd",
             },
           },
-          StringFail: {
+          StepFail: {
             entry: {
-              type: "displayFail",
+              type: "displayStepFail",
             },
             always: {
-              target: "StringEnd",
+              target: "StepEnd",
             },
           },
-          StringEnd: {
+          StepEnd: {
             entry: {
               type: "stopTimer",
             },
             always: [
               {
-                target: "WaitingString",
-                guard: "strings-left",
+                target: "TrainEnd",
+                guard: "train-finish",
               },
               {
-                target: "TrainEnd",
+                target: "InitTrainingStep",
               },
             ],
           },
           TrainEnd: {
             entry: {
-              type: "displayEnd",
+              type: "displayTrainingEnd",
             },
             type: "final",
           },
         },
         on: {
-          "session.next": {
-            target: "NewSession",
+          "train.next": {
+            target: "NewTraining",
           },
-          "session.repeat": {
-            target: "RepeatNote",
+          "train.repeat": {
+            target: "RepeatTraining",
           },
         },
       },
-      RepeatNote: {
+      RepeatTraining: {
         entry: {
-          type: "clearStringsState",
+          type: "setTrainingData",
         },
         after: {
           "0": {
-            target: "#TrainStrings.TrainSession.WaitingString",
+            target: "#TrainingSession.TrainingSession.InitTrainingStep",
             actions: [],
           },
         },
@@ -161,9 +164,8 @@ const machine = createMachine(
     types: {
       events: {} as AppFsmEvents,
     },
-  },
+  }
 );
-
 export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void): [ state: unknown, send: (event: AppFsmEvents) => void ] {
   const timerRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number | null>(null);
@@ -176,22 +178,35 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
 
   const [ state, send ] = useMachine(machine.provide({
     actions: {
-      selectNote: () => {
-        const note = utils.selectNote(options, storeRef.current.selectedNote);
-        dispatch({ type: "select-note", note });
-        send({ type: "note.selected" });
+      clearTrainingData: () => {
+        dispatch({ type: "reset" });
       },
 
-      selectString: () => {
+      setTrainingData: () => {
+        dispatch({ type: "clear-strings-state" });
+      },
+
+      initTrainingData: () => {
+        const note = utils.selectNote(options, storeRef.current.selectedNote);
+        dispatch({ type: "select-note", note });
+        console.log(">note", note);
+        send({ type: "train.init" });
+      },
+
+      displayTrainingStart: () => {
+        send({ type: "train.start" });
+      },
+
+      initTrainingStepData: () => {
         const selString = utils.selectString(options, store.stringsState);
         if (selString) {
           dispatch({ type: "select-string", string: selString });
-          send({ type: "string.selected" });
-        }
+          send({ type: "step.init" });
+        } 
       },
 
-      stringStart: () => {
-        send({type: "string.start"});
+      displayStepStart: () => {
+        send({ type: "step.start" });
       },
 
       startTimer: () => {
@@ -202,13 +217,33 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
           if (!store.paused && !store.showOptions) {
             const lastTime = lastTimeRef.current!;
             const ellapsed = (currentTime - lastTime) / 1000;
-            send({type: "time", ellapsed});
+            const progress = (ellapsed / options.speed) * 100;
+            send({type: "step.progress", progress});
           }
           lastTimeRef.current = currentTime;
         }, 16.6);
         timerRef.current = id;
       },
 
+      updateStepProgress: ({ event }) => {
+        if (event.type === "step.progress") {
+          dispatch({ type: "update-string-progress", progress: event.progress });
+          if (store.selectedStringProgress + event.progress > 100) {
+            send({ type: "step.timeout" });
+          }
+        }
+      },
+
+      displayStepOk: () => {
+        dispatch({ type: "update-string-state", string: store.selectedString, status: "ok" });
+        dispatch({ type: "display-correct", string: store.selectedString });
+      },
+      
+      displayStepFail: () => {
+        dispatch({ type: "update-string-state", string: store.selectedString, status: "fail" });
+        dispatch({ type: "display-correct", string: store.selectedString });
+      },
+      
       stopTimer: () => {
         if (timerRef.current) {
           clearInterval(timerRef.current);
@@ -216,52 +251,25 @@ export function useAppFsm (store: Store, dispatch: (action: StoreAction) => void
         }
       },
 
-      updateProgress: ({ event }) => {
-        if (event.type === "time") {
-          const progress = (event.ellapsed / options.speed) * 100;
-          dispatch({ type: "update-string-progress", progress });
-          if (store.selectedStringProgress + progress > 100) {
-            send({ type: "select.timeout" })
-          }
-        }
-      },
-
-      displayStart: () => {
-        send({ type: "start" });
-      },
-
-      displayOk: () => {
-        dispatch({ type: "update-string-state", string: store.selectedString, status: "ok" });
-        dispatch({ type: "display-correct", string: store.selectedString });
-      },
-
-      displayFail: () => {
-        dispatch({ type: "update-string-state", string: store.selectedString, status: "fail" });
-        dispatch({ type: "display-correct", string: store.selectedString });
-      },
-
-      clearState: () => {
-        dispatch({ type: "reset" });
-      },
-      clearStringsState: () => {
-        dispatch({ type: "clear-strings-state" });
-      },
-      displayEnd: () => {
+      displayTrainingEnd: () => {
         setTimeout(() => {
           if (options.endSessionBehavior === "repeat") {
-            send({ type: "session.repeat" });
+            send({ type: "train.repeat" });
           } else if (options.endSessionBehavior === "next") {
-            send({ type: "session.next" });
+            send({ type: "train.next" });
           }  
-        }, options.speed * 1000);
+        }, options.speed * 1000)
+      },
+      
+      saveTrainStats: () => {
       },
     },
     guards: {
-      "strings-left": () => {
-        return utils.isStringsLeft(options, store.stringsState);
+      "train-finish": () => {
+        return !utils.isStringsLeft(options, store.stringsState);
       },
     }
   }));
-
+  
   return [state, send];
 };

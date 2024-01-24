@@ -42,19 +42,19 @@ function App() {
   const handleClickNote = useCallback((stringNum: number, note: string) => {
     if (stringNum === selectedString) {
       if (selectedNote === note) {
-        send({ "type": "select.ok" });
+        send({ "type": "step.ok" });
       } else {
-        send({ "type": "select.fail" });
+        send({ "type": "step.fail" });
       }
     }
   }, [selectedString, selectedNote]);
 
   const handleRefresh = useCallback(() => {
-    send({ type: "session.repeat" });
+    send({ type: "train.repeat" });
   }, []);
 
   const handleNext = useCallback(() => {
-    send({ type: "session.next" });
+    send({ type: "train.next" });
   }, []);
 
   const handleShowNotes = useCallback(() => {
